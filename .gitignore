@@ -1,9 +1,0 @@
-.vscode/launch.json
-.vscode/tasks.json
-.vscode/c_cpp_properties.json
-client
-server
-client.dSYM/Contents/Info.plist
-client.dSYM/Contents/Resources/DWARF/client
-server.dSYM/Contents/Info.plist
-server.dSYM/Contents/Resources/DWARF/server
