@@ -27,7 +27,7 @@ int main(){
             cout << RESET << "# Recv Msg Error!" << endl;
             break;
         }
-        cout << GREEN << "-----You have a message:\n";
+        cout << RESET << "[You have a message]:\n";
         cout << GREEN << buf << endl;
    }
    cout << RESET << "---------- Chat Ends -----------" << endl;

@@ -17,7 +17,7 @@ int main(){
             cout << "# Recv Msg Error!" << endl;
             break;
         }
-        cout << BLUE << "-----You have a message:\n";
+        cout << RESET << "[You have a message]:\n";
         cout << BLUE << buf << endl;
         // 发消息
         string input = "input nothing!"; 
