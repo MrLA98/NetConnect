@@ -9,7 +9,7 @@
 			"type": "lldb",
 			"request": "launch",
 			"program": "${fileDirname}/${fileBasenameNoExtension}",
-			"args": [
+			"args": [ 
 			],
 			"stopAtEntry": false,
 			"cwd": "${fileDirname}",
