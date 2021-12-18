@@ -1,3 +1,12 @@
 .vscode/c_cpp_properties.json
 .vscode/tasks.json
 .vscode/launch.json
+client
+server
+client.dSYM/Contents/Info.plist
+server.dSYM/Contents/Info.plist
+.vscode/settings.json
+serverDemo
+serverDemo.dSYM/Contents/Info.plist
+clientDemo
+clientDemo.dSYM/Contents/Info.plist

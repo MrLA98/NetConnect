@@ -349,3 +349,116 @@ if((iret = recv(sockfd, buf, sizeof(buf), 0)) <= 0){
 ```
 
 - 缓存区大概能存100,000量级的数据，之后再发可能就发不出去了
+
+### 6.3 读取不完整问题
+
+> send和recv有有可能出现读取写入不完整的情况
+
+- 封装得到的解决方法
+
+```cpp
+// 收消息
+bool Readn(const int sockfd, char* buf, const size_t n){
+    // 没收到的， 一次收到的， 当前下标
+    int rest_ = n, got_once = 0, index = 0;
+    while(rest_ > 0){
+        // 一次读到的字符数
+        got_once = recv(sockfd, buf + index, rest, 0);
+        if(got_once <= 0) return false;
+        index += got_once; // 下标后移
+        rest -= got_once; // 余下的减少
+    }
+    return true;
+}
+
+// 发消息
+bool Writen(const int sockfd, char* buf, const size_t n){
+    // 没发出的， 一次发出的， 当前下标
+    int rest_ = n, sent_once = 0, index = 0;
+    while(rest_ > 0){
+        // 一次送出的字符数
+        sent_once = send(sockfd, buf + index, rest, 0);
+        if(sent_once <= 0) return false;
+        index += sent_once; // 下标后移
+        rest -= sent_once; // 余下的减少
+    }
+    return true;
+}
+```
+
+### 6.4 分包和粘包问题
+
+- 主要问题：
+  - 一端的send和另一端的recv，在第三个参数处不匹配
+- 为了解决问题，一般实际编程中，要自定一份协议，如
+
+  - `0010HelloWorld` -- 报文长度 + 报文内容
+  - 长度用ascii的数字或二进制整数
+- 解决方案
+  - 报文长度(4字节整数) + 报文内容
+- 分开接收“报文长度” 和 “报文内容”
+
+```cpp
+bool TcpRead(const int sockfd, char* buf, int * ibuflen, const int itimeout = 0){
+    // 无效socket就返回false
+    if(sockfd == -1) return false;
+    
+    int ret = 0;
+    // 实现超时控制
+    if(itimout > 0){
+        fd_set tmpfd;
+        FD_ZERO(&tmpfd);
+        FD_SET(sockfd, &tmpfd);
+        timeval timeout;
+        timeout.tv_sec = 5;
+        timeout.tv_usec = 0;
+        ret = select(sockfd+1, 0, &tmpfd, 0, &timeout);
+        if(ret <= 0) return false;
+    }
+    
+    // 读长度
+    (*ibuflen) = 0;
+    ret = Readn(sockfd, (char*)ibuflen, 4);
+    if(ret == false) return false;
+    (*ibuflen) = ntohl(*ibuflen);
+    
+    // 读内容
+    ret = Readn(sockfd, buf, (*ibuflen));
+    return ret;
+}
+```
+
+- 处理要发送的内容，然后交给改造后的send函数
+
+```cpp
+bool TcpWrite(const int sockfd, char* buf, const int ibuflen = 0){
+    // 无效socket就返回false
+    if(sockfd == -1) return false;
+    
+    // IO复用实现的超时机制
+    fd_set tmpfd;
+    FD_ZERO(&tmpfd);
+    FD_SET(sockfd, &tmpfd);
+    timeval timeout;
+    timeout.tv_sec = 5;
+    timeout.tv_usec = 0;
+    int ret = select(sockfd+1, 0, &tmpfd, 0, &timeout);
+    if(ret <= 0) return false;
+    // 主要代码如下：
+    // 区分表示内容的字符串和表示长度的整数
+    int litlen = ibuflen == 0 ? strlen(buf) : ibuflen;
+    bigLen = htonl(litLen); // 网络字节序
+    // 设置字符串
+    char strTBuf[LitLen + 4];
+    memset(strTBuf, 0, sizeof(strTBuf));
+    memcpy(strTBuf, &bigLen, 4);
+    memcpy(strTBuf + 4, buf, ilen);
+    
+    // 交给“写函数”
+    ret = Writen(socfed, strTBuf, litLen + 4);
+    return ret;
+}
+```
+
+
+
