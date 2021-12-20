@@ -1,4 +1,4 @@
-#include "TcpLib/TcpClassLibs.hpp"
+#include "../TcpLib/TcpClassLibs.hpp"
 
 int main(){
     TcpServer myServer;
